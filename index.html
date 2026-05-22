@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEGURITO — Supervisión BBVA Perú 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bbva-navy: #004481;
+    --bbva-blue: #1973B8;
+    --bbva-sky: #48A5E0;
+    --bbva-cyan: #00C8E0;
+    --bbva-green: #00B47D;
+    --bbva-amber: #F5A800;
+    --bbva-red: #E63D2F;
+    --bbva-dark: #0A1628;
+    --bbva-panel: #0D1F3C;
+    --bbva-surface: #112244;
+    --bbva-card: #162E55;
+    --bbva-border: rgba(72,165,224,0.2);
+    --bbva-text: #E8F0FA;
+    --bbva-muted: #6B89A8;
+    --font-main: 'Rajdhani', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bbva-dark);
+    color: var(--bbva-text);
+    font-family: var(--font-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, var(--bbva-navy) 0%, #002060 100%);
+    border-bottom: 1px solid var(--bbva-border);
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .logo-badge {
+    background: var(--bbva-cyan);
+    color: var(--bbva-dark);
+    font-family: var(--font-main);
+    font-weight: 700;
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+  }
+  .header-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #fff;
+  }
+  .header-sub {
+    font-size: 11px;
+    color: var(--bbva-muted);
+    letter-spacing: 1px;
+    font-family: var(--font-mono);
+  }
+  .status-pill {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--bbva-border);
+    color: var(--bbva-sky);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--bbva-green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* ── LAYOUT ── */
+  .app-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    height: calc(100vh - 56px);
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 280px;
+    background: var(--bbva-panel);
+    border-right: 1px solid var(--bbva-border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+  .sidebar-section {
+    padding: 16px;
+    border-bottom: 1px solid var(--bbva-border);
+  }
+  .sidebar-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--bbva-muted);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 13px;
+  }
+  .info-label { color: var(--bbva-muted); font-size: 12px; }
+  .info-value { color: var(--bbva-text); font-weight: 600; font-family: var(--font-mono); font-size: 12px; }
+  .info-value.accent { color: var(--bbva-cyan); }
+
+  .progress-section { padding: 16px; }
+  .progress-bar-wrap { margin-top: 8px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; }
+  .progress-track { background: var(--bbva-card); border-radius: 4px; height: 6px; overflow: hidden; }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--bbva-blue), var(--bbva-cyan));
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+
+  .hallazgos-list { padding: 12px 16px; }
+  .hallazgo-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 12px;
+  }
+  .riesgo-badge {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+  .riesgo-AR { background: rgba(230,61,47,0.2); color: #FF6B5E; border: 1px solid rgba(230,61,47,0.4); }
+  .riesgo-MR { background: rgba(245,168,0,0.2); color: #FFC63D; border: 1px solid rgba(245,168,0,0.4); }
+  .riesgo-BR { background: rgba(0,180,125,0.2); color: #00D98C; border: 1px solid rgba(0,180,125,0.4); }
+
+  .chart-mini { padding: 12px 16px; }
+  canvas { max-width: 100%; }
+
+  /* ── MAIN CHAT ── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .msg {
+    display: flex;
+    gap: 10px;
+    animation: fadeIn 0.25s ease;
+    max-width: 860px;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+  .msg.system { align-self: flex-start; }
+  .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+
+  .msg-avatar {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0;
+    font-family: var(--font-mono);
+  }
+  .msg.system .msg-avatar { background: var(--bbva-navy); color: var(--bbva-cyan); border: 1px solid var(--bbva-border); }
+  .msg.user .msg-avatar { background: var(--bbva-surface); color: var(--bbva-sky); border: 1px solid var(--bbva-border); }
+
+  .msg-bubble {
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 720px;
+  }
+  .msg.system .msg-bubble {
+    background: var(--bbva-surface);
+    border: 1px solid var(--bbva-border);
+    color: var(--bbva-text);
+    border-top-left-radius: 2px;
+  }
+  .msg.user .msg-bubble {
+    background: var(--bbva-navy);
+    border: 1px solid rgba(72,165,224,0.3);
+    color: #fff;
+    border-top-right-radius: 2px;
+  }
+
+  .msg-bubble pre {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--bbva-border);
+    border-radius: 6px;
+    padding: 10px;
+    overflow-x: auto;
+    margin: 8px 0;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+
+  .tag-espera {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    background: rgba(0,200,224,0.1);
+    color: var(--bbva-cyan);
+    border: 1px solid rgba(0,200,224,0.3);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 6px;
+  }
+
+  .lin-block {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--bbva-border);
+    border-left: 3px solid var(--bbva-blue);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin: 6px 0;
+  }
+  .lin-num { font-family: var(--font-mono); color: var(--bbva-cyan); font-size: 12px; margin-bottom: 4px; }
+  .lin-text { font-size: 13px; line-height: 1.5; }
+  .lin-opts { margin-top: 8px; display: flex; gap: 8px; }
+  .lin-opt {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--bbva-border);
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    color: var(--bbva-text);
+  }
+  .lin-opt:hover { background: var(--bbva-blue); border-color: var(--bbva-blue); color: #fff; }
+  .lin-opt.cumple { border-color: rgba(0,180,125,0.4); color: #00D98C; }
+  .lin-opt.nocumple { border-color: rgba(230,61,47,0.4); color: #FF6B5E; }
+  .lin-opt.cumple:hover { background: var(--bbva-green); border-color: var(--bbva-green); color: #fff; }
+  .lin-opt.nocumple:hover { background: var(--bbva-red); border-color: var(--bbva-red); color: #fff; }
+
+  .transicion-block {
+    background: linear-gradient(135deg, rgba(0,68,129,0.4), rgba(25,115,184,0.2));
+    border: 1px solid var(--bbva-blue);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin: 6px 0;
+  }
+  .transicion-title {
+    font-size: 14px; font-weight: 700; color: var(--bbva-cyan);
+    letter-spacing: 2px; margin-bottom: 8px;
+    border-bottom: 1px solid var(--bbva-border);
+    padding-bottom: 6px;
+  }
+
+  .vent-opts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .vent-btn {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--bbva-border);
+    background: var(--bbva-card);
+    color: var(--bbva-sky);
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 48px; text-align: center;
+  }
+  .vent-btn:hover { background: var(--bbva-blue); border-color: var(--bbva-blue); color: #fff; }
+
+  .alert-ok {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(0,180,125,0.1); border: 1px solid rgba(0,180,125,0.3);
+    color: #00D98C; border-radius: 5px; padding: 4px 10px;
+    font-size: 13px; font-family: var(--font-mono); margin: 4px 0;
+  }
+  .alert-exceso {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(245,168,0,0.1); border: 1px solid rgba(245,168,0,0.4);
+    color: #FFC63D; border-radius: 5px; padding: 4px 10px;
+    font-size: 13px; font-family: var(--font-mono); margin: 4px 0;
+  }
+
+  .informe-block {
+    background: var(--bbva-panel);
+    border: 1px solid var(--bbva-blue);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 8px 0;
+  }
+  .informe-header {
+    background: linear-gradient(135deg, var(--bbva-navy), #001840);
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--bbva-border);
+  }
+  .informe-title { font-size: 15px; font-weight: 700; letter-spacing: 2px; color: #fff; }
+  .informe-sub { font-size: 11px; color: var(--bbva-muted); font-family: var(--font-mono); margin-top: 2px; }
+  .informe-body { padding: 16px 18px; }
+  .informe-section { margin-bottom: 16px; }
+  .informe-section-title {
+    font-family: var(--font-mono); font-size: 11px; color: var(--bbva-cyan);
+    letter-spacing: 2px; margin-bottom: 8px; padding-bottom: 4px;
+    border-bottom: 1px solid var(--bbva-border);
+  }
+  .datos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; font-size: 13px; }
+  .dato-row { display: flex; gap: 8px; padding: 3px 0; }
+  .dato-key { color: var(--bbva-muted); min-width: 140px; font-size: 12px; }
+  .dato-val { color: var(--bbva-text); font-weight: 600; }
+
+  table.informe-tbl {
+    width: 100%; border-collapse: collapse;
+    font-size: 12px; font-family: var(--font-mono);
+  }
+  table.informe-tbl th {
+    background: rgba(0,68,129,0.5);
+    color: var(--bbva-sky); font-size: 11px;
+    padding: 6px 8px; text-align: left;
+    border-bottom: 1px solid var(--bbva-border);
+  }
+  table.informe-tbl td {
+    padding: 5px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--bbva-text);
+  }
+  table.informe-tbl tr:hover td { background: rgba(255,255,255,0.03); }
+  .tbl-ok { color: #00D98C; }
+  .tbl-exceso { color: #FFC63D; font-weight: 600; }
+  .tbl-exceso-val { color: #FFC63D; }
+
+  .score-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .score-table th { color: var(--bbva-muted); font-weight: 500; padding: 4px 8px; text-align: left; font-size: 12px; }
+  .score-table td { padding: 4px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+  .nota-display {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(0,68,129,0.3); border: 1px solid var(--bbva-blue);
+    border-radius: 8px; padding: 12px 16px; margin-top: 10px;
+  }
+  .nota-num { font-size: 36px; font-weight: 700; color: var(--bbva-cyan); font-family: var(--font-mono); }
+  .nota-estado { font-size: 14px; font-weight: 700; letter-spacing: 1px; }
+  .estado-SAT { color: #00D98C; }
+  .estado-ACE { color: #FFC63D; }
+  .estado-DEF { color: #FF6B5E; }
+
+  .export-btn {
+    display: block; width: 100%;
+    background: var(--bbva-blue); color: #fff;
+    border: none; border-radius: 6px; padding: 10px;
+    font-family: var(--font-main); font-size: 14px; font-weight: 600;
+    cursor: pointer; letter-spacing: 1px; margin-top: 12px;
+    transition: background 0.2s;
+  }
+  .export-btn:hover { background: var(--bbva-sky); }
+
+  /* ── INPUT AREA ── */
+  .input-area {
+    padding: 12px 24px 16px;
+    border-top: 1px solid var(--bbva-border);
+    background: var(--bbva-panel);
+    flex-shrink: 0;
+  }
+  .input-hint {
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--bbva-muted); margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .hint-tag {
+    background: rgba(0,200,224,0.1); color: var(--bbva-cyan);
+    border: 1px solid rgba(0,200,224,0.3);
+    padding: 1px 8px; border-radius: 3px; font-size: 10px;
+  }
+  .input-row { display: flex; gap: 8px; }
+  .chat-input {
+    flex: 1; background: var(--bbva-card);
+    border: 1px solid var(--bbva-border); border-radius: 8px;
+    color: var(--bbva-text); font-family: var(--font-mono);
+    font-size: 14px; padding: 10px 14px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .chat-input:focus { border-color: var(--bbva-blue); }
+  .chat-input::placeholder { color: var(--bbva-muted); }
+  .send-btn {
+    background: var(--bbva-blue); color: #fff;
+    border: none; border-radius: 8px; padding: 10px 18px;
+    cursor: pointer; font-family: var(--font-main);
+    font-size: 14px; font-weight: 600; letter-spacing: 1px;
+    transition: background 0.2s; flex-shrink: 0;
+  }
+  .send-btn:hover { background: var(--bbva-sky); }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(72,165,224,0.25); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo-badge">BBVA</div>
+    <div>
+      <div class="header-title">SEGURITO</div>
+      <div class="header-sub">SUPERVISOR SENIOR DE SEGURIDAD FÍSICA · v2026</div>
+    </div>
+  </div>
+  <div class="status-pill">
+    <div class="status-dot"></div>
+    SISTEMA ACTIVO
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="app-body">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">SESIÓN ACTUAL</div>
+      <div class="info-row"><span class="info-label">Supervisor</span><span class="info-value accent" id="sb-supervisor">—</span></div>
+      <div class="info-row"><span class="info-label">Oficina</span><span class="info-value" id="sb-oficina">—</span></div>
+      <div class="info-row"><span class="info-label">Ciclo</span><span class="info-value" id="sb-ciclo">—</span></div>
+      <div class="info-row"><span class="info-label">Fecha</span><span class="info-value" id="sb-fecha">—</span></div>
+      <div class="info-row"><span class="info-label">Hora</span><span class="info-value" id="sb-hora">—</span></div>
+    </div>
+
+    <div class="progress-section">
+      <div class="sidebar-label">PROGRESO</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-label">
+          <span id="sb-prog-text" style="font-size:12px;color:var(--bbva-muted)">0 / 0 lineamientos</span>
+          <span id="sb-prog-pct" style="font-size:12px;color:var(--bbva-cyan);font-family:var(--font-mono)">0%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="sb-prog-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">RESUMEN RIESGO</div>
+      <div class="info-row"><span class="info-label" style="color:#FF6B5E">Alto Riesgo (AR)</span><span class="info-value" id="sb-ar">0</span></div>
+      <div class="info-row"><span class="info-label" style="color:#FFC63D">Riesgo Medio (MR)</span><span class="info-value" id="sb-mr">0</span></div>
+      <div class="info-row"><span class="info-label" style="color:#00D98C">Bajo Riesgo (BR)</span><span class="info-value" id="sb-br">0</span></div>
+      <div class="info-row" style="margin-top:4px;border-top:1px solid var(--bbva-border);padding-top:6px">
+        <span class="info-label">Nota actual</span>
+        <span class="info-value accent" id="sb-nota">20</span>
+      </div>
+    </div>
+
+    <div class="chart-mini">
+      <div class="sidebar-label">DISTRIBUCIÓN NC</div>
+      <canvas id="chartRiesgo" height="160"></canvas>
+    </div>
+
+    <div class="hallazgos-list" id="hallazgos-list">
+      <div class="sidebar-label">NO CONFORMIDADES</div>
+      <div id="hallazgos-items" style="font-size:12px;color:var(--bbva-muted);padding:6px 0">Sin hallazgos.</div>
+    </div>
+  </div>
+
+  <!-- MAIN CHAT -->
+  <div class="main">
+    <div class="chat-area" id="chat-area"></div>
+    <div class="input-area">
+      <div class="input-hint">
+        <span>ESPERANDO:</span>
+        <span class="hint-tag" id="hint-tag">CLAVE</span>
+        <span id="hint-desc" style="color:var(--bbva-muted)">Ingrese su clave de acceso</span>
+      </div>
+      <div class="input-row">
+        <input type="text" class="chat-input" id="chat-input" placeholder="Escriba aquí..." autocomplete="off" />
+        <button class="send-btn" id="send-btn">ENVIAR</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATOS Y CONSTANTES
+// ═══════════════════════════════════════════════════════════
+
+const CLAVES = {
+  '051957979979': 'Elard Núñez Delgado',
+  '051985552815': 'Damián Ordoñez Collantes',
+  '051946813657': 'José Espinoza Amar',
+  '051924283038': 'Hiraldo Alva Puri'
+};
+
+const LINEAMIENTOS = {
+  1:  { txt: 'Cierre de puerta principal sin seguro facilitando el ingreso sin llave (una o dos) o no colocación de los pines de hoja fija.', riesgo: 'AR' },
+  2:  { txt: 'No confirmación de relevo / cambio / rotación de personal de custodia PNP / vigilancia.', riesgo: 'MR' },
+  3:  { txt: 'Falta de dualidad en el ingreso al local (manejo de llaves por una sola persona).', riesgo: 'AR' },
+  4:  { txt: 'Ingreso al local con personal de custodia sin armamento.', riesgo: 'AR' },
+  5:  { txt: 'Ingreso al local sin custodia, completa y sin autorización del Servicio de Seguridad.', riesgo: 'AR' },
+  6:  { txt: 'Delegación de llaves de puerta de ingreso a personas ajenas a la oficina en la PRE APERTURA.', riesgo: 'AR' },
+  7:  { txt: 'Falta de dualidad en el manejo de caja fuerte, bóveda de ATM y cajas pulmón.', riesgo: 'AR' },
+  8:  { txt: 'Llave de bóveda de ATM fuera de caja fuerte o de un medio de protección con 6 minutos de retardo.', riesgo: 'AR' },
+  9:  { txt: 'Apertura de puerta de ingreso cuando la caja fuerte se encuentre abierta o activada o se encuentre efectivo expuesto (fuera de un medio de custodia con retardo) en la PRE APERTURA.', riesgo: 'AR' },
+  10: { txt: 'Incorrecta asignación de responsabilidades de claves / llaves de bóveda.', riesgo: 'MR' },
+  11: { txt: 'Ingreso al local de personas no autorizadas o ajenas al BBVA.', riesgo: 'AR' },
+  12: { txt: 'Falta de supervisión de la custodia de oficina por parte de los funcionarios de la oficina.', riesgo: 'MR' },
+  13: { txt: 'Iniciar atención con medios de custodia de efectivo abiertos o tiempo de retardo activado, dinero expuesto o sin la correcta distribución del efectivo de acuerdo a los límites establecidos.', riesgo: 'AR' },
+  14: { txt: 'Exceso en los límites autorizados en cajones.', riesgo: 'AR' },
+  15: { txt: 'Empleo inadecuado de las caja buzón (no utilización de ranura o abiertas con dinero en interior).', riesgo: 'AR' },
+  16: { txt: 'Exceso en los límites autorizados en cajas buzón.', riesgo: 'MR' },
+  17: { txt: 'Desconocimiento de límites máximos autorizados en cajones y cajas buzón.', riesgo: 'MR' },
+  18: { txt: 'Empleo de la clave de la caja buzón no es personal.', riesgo: 'AR' },
+  19: { txt: 'Empleo de clave de caja fuerte, cajas pulmón, cajas intermedias no es personal.', riesgo: 'AR' },
+  20: { txt: 'Devolución de efectivo dentro de los 45 minutos antes del término del horario de atención al público.', riesgo: 'MR' },
+  21: { txt: 'Desconocimiento de utilización del pulsador de asalto y/o ubicación del mismo.', riesgo: 'AR' },
+  22: { txt: 'No declaran al sistema, el dinero recibido / devuelto.', riesgo: 'AR' },
+  23: { txt: 'Exposición visual del traslado del efectivo (no utilización de lonchera metálica u otro medio).', riesgo: 'MR' },
+  24: { txt: 'Exposición innecesaria de efectivo de oficina durante los procedimientos de remesa, intervención de ATM, remesa interna, retiro de efectivo de bóveda.', riesgo: 'AR' },
+  25: { txt: 'Ambientes restringidos internos abiertos o cerrados sin asegurar (hall de asesores, Plataforma, Economato, Antebóveda, Ambiente de ATM, otros).', riesgo: 'MR' },
+  26: { txt: 'Falta de observación de actividad sospechosa en el interior.', riesgo: 'BR' },
+  27: { txt: 'Efectivo no atesorado en bóveda luego del cierre del primer turno en provincias.', riesgo: 'MR' },
+  28: { txt: 'Apertura de bóveda de ATM cuando contienen saldos superiores a lo establecido.', riesgo: 'AR' },
+  29: { txt: 'Falta de coordinación con Seguridad ante fallas en los sistemas de seguridad y protección de efectivo, situaciones de riesgo por trabajos, remesas y entregas de efectivo en horas extraordinarias, desconocimiento de procedimientos.', riesgo: 'MR' },
+  30: { txt: 'Asesores terminan de recontar su saldo final y mantienen el efectivo expuesto a la espera de apertura de caja fuerte.', riesgo: 'MR' },
+  31: { txt: 'Activación de clave de retardo de caja fuerte, pulmón o auxiliar o abrirlas con clientes en el interior de la oficina.', riesgo: 'AR' },
+  32: { txt: 'Apertura de puerta de ingreso cuando la caja fuerte se encuentre abierta o activada o se encuentre efectivo expuesto (fuera de un medio de custodia con retardo) al TÉRMINO DEL HORARIO.', riesgo: 'AR' },
+  33: { txt: 'Delegación de llaves de puerta de ingreso a personas ajenas a la oficina al TÉRMINO DEL HORARIO.', riesgo: 'AR' },
+  34: { txt: 'Puerta de acceso a la oficina abierta o sin seguro (llave) al término del horario de atención.', riesgo: 'AR' },
+  35: { txt: 'Permanencia de personas no autorizadas durante los procesos de cierre de jornada.', riesgo: 'MR' },
+  36: { txt: 'Cierre del local sin la custodia completa.', riesgo: 'AR' },
+  37: { txt: 'Preparación, depuración, recuento, embolsado de la remesa en bóveda durante la atención.', riesgo: 'MR' },
+  38: { txt: 'No identificación del personal de portavalores.', riesgo: 'AR' },
+  39: { txt: 'La remesa a evacuar, estaba expuesta al momento del ingreso del portavalor.', riesgo: 'AR' },
+  40: { txt: 'Entregar parte de la remesa a evacuar, dejando el remanente de la misma fuera de un medio de custodia con retardo de al menos 6 minutos.', riesgo: 'AR' },
+  41: { txt: 'No se protegió el dinero después de su recepción (envío de dinero a oficina).', riesgo: 'AR' },
+  42: { txt: 'Preparación, depuración, recuento, abastecimiento de cajetines durante la atención.', riesgo: 'MR' },
+  43: { txt: 'Cajetines abastecidos pernoctan en un medio menor a 10 minutos de retardo.', riesgo: 'AR' },
+  44: { txt: 'Tiempos prolongados sin cambio de clave de caja fuerte, buzón, pulmón y auxiliar a pesar de relevos en la oficina por diferentes y Bóveda ATM condiciones.', riesgo: 'MR' },
+  45: { txt: 'No contar con los duplicados de las claves de caja pulmón / caja compartida /caja buzón /caja auxiliar / maletero y clave maestra de cajas buzón en bóveda.', riesgo: 'MR' },
+  46: { txt: 'No contar con duplicado de llaves de acceso a oficina en oficina bancaria amiga (Provincia).', riesgo: 'BR' },
+  47: { txt: 'No contar con duplicados de llaves de caja fuerte en CGR u Oficina bancaria amiga en provincia.', riesgo: 'BR' },
+  48: { txt: 'Falta de Señalética de medios de custodia y referencias de seguridad física en la oficina.', riesgo: 'BR' },
+  49: { txt: 'Procedimientos riesgosos o inadecuados o desconocimientos de los mismos, durante los procesos de: remesas, compensaciones, solicitud o devolución de efectivo en la jornada de trabajo, pre apertura, cuadre y cierre de la oficina.', riesgo: 'MR' },
+  50: { txt: 'Rutas de evacuación obstaculizadas / hacinamiento al interior de la oficina.', riesgo: 'MR' },
+  51: { txt: 'Ambiente de grupo electrógeno con desechos inflamables (papeles, desperdicios, bolsas etc.).', riesgo: 'BR' },
+  52: { txt: 'Instalaciones eléctricas en mal estado no reportadas oportunamente para su reparación.', riesgo: 'BR' },
+  53: { txt: 'Extintor en mal estado / inoperativo no reportado oportunamente para su mantenimiento.', riesgo: 'MR' },
+  54: { txt: 'Desperdicios o desechos inflamables junto a caja central de energía eléctrica o en la infosala (rack de comunicaciones).', riesgo: 'BR' },
+  55: { txt: 'Acceso a extintor obstaculizado o bloqueado / falta de inspección mensual.', riesgo: 'BR' },
+  56: { txt: 'Fecha de vencimiento del extintor cumplida.', riesgo: 'MR' },
+  57: { txt: 'Observaciones al Legajo de, SUCAMEC.', riesgo: 'MR' },
+  58: { txt: 'Luces de emergencia con fallas no reportadas o en estado de deterioro.', riesgo: 'BR' }
+};
+
+const CICLOS = {
+  A: [1,2,3,4,5,6,7,8,9,10,11,48,49,50,51,52,53,54,55,56,57,58],
+  B: [12,13,'VENT',15,17,18,19,20,21,22,23,24,25,26,27,28,29,48,49,50,51,52,53,54,55,56,57,58],
+  C: [30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58],
+  D: [1,2,3,4,5,6,7,8,9,10,11,12,13,'VENT',15,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58]
+};
+
+const CICLO_NOMBRES = {A:'PRE APERTURA',B:'ATENCIÓN AL PÚBLICO',C:'TÉRMINO DEL HORARIO Y CIERRE',D:'CICLO OPERATIVO COMPLETO'};
+
+// ═══════════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ═══════════════════════════════════════════════════════════
+
+let STATE = {
+  fase: 'AUTH',
+  SUPERVISOR: null, OFICINA: null, CICLO: null,
+  FECHA_INS: null, HORA_INS: null,
+  LISTA_LINS: [], POS: 0,
+  HALLAZGOS: [],
+  TOTAL_VENT: 0, TODAS_VENT: [],
+  ORDEN_EVAL: [], VENT_EVAL: [],
+  NC_14: false, NC_16: false,
+  VENT: {},
+  ventFase: null, VENT_ACTIVA: null,
+  esperando: 'CLAVE'
+};
+
+// ═══════════════════════════════════════════════════════════
+// CHART SIDEBAR
+// ═══════════════════════════════════════════════════════════
+
+let riesgoChart;
+function initChart() {
+  const ctx = document.getElementById('chartRiesgo').getContext('2d');
+  riesgoChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['AR', 'MR', 'BR'],
+      datasets: [{
+        data: [0, 0, 0],
+        backgroundColor: ['rgba(230,61,47,0.75)','rgba(245,168,0,0.75)','rgba(0,180,125,0.75)'],
+        borderColor: ['#E63D2F','#F5A800','#00B47D'],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '60%',
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            label: (c) => ` ${c.label}: ${c.raw}`
+          },
+          bodyColor: '#E8F0FA',
+          backgroundColor: '#0D1F3C',
+          borderColor: 'rgba(72,165,224,0.3)',
+          borderWidth: 1
+        }
+      }
+    }
+  });
+}
+
+function updateSidebar() {
+  document.getElementById('sb-supervisor').textContent = STATE.SUPERVISOR || '—';
+  document.getElementById('sb-oficina').textContent = STATE.OFICINA || '—';
+  document.getElementById('sb-ciclo').textContent = STATE.CICLO ? CICLO_NOMBRES[STATE.CICLO] : '—';
+  document.getElementById('sb-fecha').textContent = STATE.FECHA_INS || '—';
+  document.getElementById('sb-hora').textContent = STATE.HORA_INS || '—';
+
+  const total = STATE.LISTA_LINS.filter(x => x !== 'VENT').length;
+  const done = Math.max(0, STATE.POS - STATE.LISTA_LINS.slice(0, STATE.POS).filter(x => x === 'VENT').length);
+  const pct = total > 0 ? Math.round(done/total*100) : 0;
+  document.getElementById('sb-prog-text').textContent = `${done} / ${total} lineamientos`;
+  document.getElementById('sb-prog-pct').textContent = `${pct}%`;
+  document.getElementById('sb-prog-bar').style.width = pct + '%';
+
+  const ar = STATE.HALLAZGOS.filter(h=>h.riesgo==='AR').length;
+  const mr = STATE.HALLAZGOS.filter(h=>h.riesgo==='MR').length;
+  const br = STATE.HALLAZGOS.filter(h=>h.riesgo==='BR').length;
+  document.getElementById('sb-ar').textContent = ar;
+  document.getElementById('sb-mr').textContent = mr;
+  document.getElementById('sb-br').textContent = br;
+
+  const descuento = ar*5 + mr*3 + br;
+  const nota = Math.max(0, 20 - descuento);
+  document.getElementById('sb-nota').textContent = nota;
+
+  riesgoChart.data.datasets[0].data = [ar, mr, br];
+  riesgoChart.update();
+
+  const hi = document.getElementById('hallazgos-items');
+  if (STATE.HALLAZGOS.length === 0) {
+    hi.innerHTML = '<span style="color:var(--bbva-muted)">Sin hallazgos.</span>';
+  } else {
+    hi.innerHTML = STATE.HALLAZGOS.map(h => `
+      <div class="hallazgo-item">
+        <span class="riesgo-badge riesgo-${h.riesgo}">${h.riesgo}</span>
+        <span style="color:var(--bbva-text)">#${h.num}</span>
+      </div>
+    `).join('');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// CHAT UI
+// ═══════════════════════════════════════════════════════════
+
+function addMsg(html, tipo) {
+  const area = document.getElementById('chat-area');
+  const div = document.createElement('div');
+  div.className = `msg ${tipo}`;
+  const av = tipo === 'system' ? 'SG' : 'UD';
+  div.innerHTML = `
+    <div class="msg-avatar">${av}</div>
+    <div class="msg-bubble">${html}</div>
+  `;
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+}
+
+function setHint(tag, desc) {
+  document.getElementById('hint-tag').textContent = tag;
+  document.getElementById('hint-desc').textContent = desc;
+  STATE.esperando = tag;
+}
+
+function fmt(n) { return n.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2}); }
+function parseMonto(s) {
+  const clean = s.replace(/[S/$,\s]/g, '').replace(/[a-zA-Z]/g,'');
+  const n = parseFloat(clean);
+  return isNaN(n) ? 0 : n;
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDERIZADORES
+// ═══════════════════════════════════════════════════════════
+
+function renderLineamiento(num) {
+  const lin = LINEAMIENTOS[num];
+  return `
+    <div class="lin-block">
+      <div class="lin-num">LINEAMIENTO #${num}</div>
+      <div class="lin-text">${lin.txt}</div>
+      <div class="lin-opts">
+        <button class="lin-opt cumple" onclick="responderLin(${num},'1')">1️⃣ SE CUMPLE</button>
+        <button class="lin-opt nocumple" onclick="responderLin(${num},'2')">2️⃣ NO SE CUMPLE</button>
+      </div>
+    </div>
+    <span class="tag-espera">[ESPERA: CONFORMIDAD]</span>
+  `;
+}
+
+function renderTransicion() {
+  return `
+    <div class="transicion-block">
+      <div class="transicion-title">✦ NUEVA FASE: EVALUACIÓN DE VENTANILLAS ✦</div>
+      <p style="font-size:13px;margin-bottom:10px">Lineamiento #13 registrado.<br>Ahora evaluaremos el efectivo en cada ventanilla.</p>
+      <p style="font-size:13px;margin-bottom:8px">¿Cuántas ventanillas tiene la oficina <strong style="color:var(--bbva-cyan)">${STATE.OFICINA}</strong>?</p>
+      <p style="font-size:12px;color:var(--bbva-muted)">Escriba el número entre paréntesis. Ejemplo: (4)</p>
+    </div>
+    <span class="tag-espera">[ESPERA: CANTIDAD-VENT]</span>
+  `;
+}
+
+function renderVentOpts(pendientes) {
+  const btns = pendientes.map(v => `<button class="vent-btn" onclick="elegirVent(${v})">(${v})</button>`).join('');
+  return `
+    <p style="font-size:13px;margin-bottom:8px">¿Con qué ventanilla ${pendientes.length < STATE.TOTAL_VENT ? 'continuamos' : 'iniciamos la supervisión'}?</p>
+    <p style="font-size:12px;color:var(--bbva-muted);margin-bottom:8px">Escriba el número entre paréntesis:</p>
+    <div class="vent-opts">${btns}</div>
+    <span class="tag-espera">[ESPERA: NUM-VENT]</span>
+  `;
+}
+
+function renderTablas() {
+  let htmlA = `
+    <div class="informe-section">
+      <div class="informe-section-title">TABLA A — LÍMITES CAJA BUZÓN (#16) | LÍMITE: $53,500.00 USD</div>
+      <div style="overflow-x:auto">
+      <table class="informe-tbl">
+        <thead><tr>
+          <th>N° Vent.</th><th>Asesor</th><th>S/. Soles</th><th>Conv. $USD</th><th>$ Dólares</th><th>Total $USD</th><th>Estado</th><th>Exceso $USD</th>
+        </tr></thead><tbody>
+  `;
+  for (const v of STATE.ORDEN_EVAL) {
+    const d = STATE.VENT[v];
+    const excOk = d.CB_EXCESO === 0;
+    htmlA += `<tr>
+      <td>${v}</td><td>${d.ASESOR}</td>
+      <td>S/. ${fmt(d.CB_SOLES)}</td>
+      <td>$ ${fmt(d.CB_CONV)}</td>
+      <td>$ ${fmt(d.CB_DOLAR)}</td>
+      <td>$ ${fmt(d.CB_TOTAL)}</td>
+      <td class="${excOk?'tbl-ok':'tbl-exceso'}">${excOk?'✅ OK':'⚠️ EXCEDE'}</td>
+      <td class="tbl-exceso-val">${excOk?'---':'*$ '+fmt(d.CB_EXCESO)+'*'}</td>
+    </tr>`;
+  }
+  htmlA += '</tbody></table></div></div>';
+
+  let htmlB = `
+    <div class="informe-section" style="margin-top:12px">
+      <div class="informe-section-title">TABLA B — LÍMITES CAJÓN (#14) | LÍMITE: $3,500.00 USD</div>
+      <div style="overflow-x:auto">
+      <table class="informe-tbl">
+        <thead><tr>
+          <th>N° Vent.</th><th>Asesor</th><th>S/. Soles</th><th>Conv. $USD</th><th>$ Dólares</th><th>Total $USD</th><th>Estado</th><th>Exceso $USD</th>
+        </tr></thead><tbody>
+  `;
+  for (const v of STATE.ORDEN_EVAL) {
+    const d = STATE.VENT[v];
+    const excOk = d.CAJ_EXCESO === 0;
+    htmlB += `<tr>
+      <td>${v}</td><td>${d.ASESOR}</td>
+      <td>S/. ${fmt(d.CAJ_SOLES)}</td>
+      <td>$ ${fmt(d.CAJ_CONV)}</td>
+      <td>$ ${fmt(d.CAJ_DOLAR)}</td>
+      <td>$ ${fmt(d.CAJ_TOTAL)}</td>
+      <td class="${excOk?'tbl-ok':'tbl-exceso'}">${excOk?'✅ OK':'⚠️ EXCEDE'}</td>
+      <td class="tbl-exceso-val">${excOk?'---':'*$ '+fmt(d.CAJ_EXCESO)+'*'}</td>
+    </tr>`;
+  }
+  htmlB += '</tbody></table></div></div>';
+  return htmlA + htmlB;
+}
+
+function renderInformeFinal() {
+  const ar = STATE.HALLAZGOS.filter(h=>h.riesgo==='AR').length;
+  const mr = STATE.HALLAZGOS.filter(h=>h.riesgo==='MR').length;
+  const br = STATE.HALLAZGOS.filter(h=>h.riesgo==='BR').length;
+  const descuento = ar*5 + mr*3 + br;
+  const nota = Math.max(0, 20 - descuento);
+  let estado, estClass;
+  if (nota >= 15) { estado = 'SATISFACTORIA'; estClass = 'estado-SAT'; }
+  else if (nota >= 11) { estado = 'ACEPTABLE'; estClass = 'estado-ACE'; }
+  else { estado = 'DEFICIENTE'; estClass = 'estado-DEF'; }
+
+  const conVent = STATE.CICLO === 'B' || STATE.CICLO === 'D';
+
+  let tablaAHtml, tablaBHtml;
+  if (!conVent) {
+    tablaAHtml = '<p style="font-size:13px;color:var(--bbva-muted)">No aplica para este ciclo operativo.</p>';
+    tablaBHtml = '<p style="font-size:13px;color:var(--bbva-muted)">No aplica para este ciclo operativo.</p>';
+  } else {
+    tablaAHtml = renderTablas();
+    tablaBHtml = '';
+  }
+
+  let hallazgosHtml;
+  if (STATE.HALLAZGOS.length === 0) {
+    hallazgosHtml = '<p style="font-size:13px;color:var(--bbva-green)">Sin no conformidades registradas.</p>';
+  } else {
+    const sorted = [...STATE.HALLAZGOS].sort((a,b)=>a.num-b.num);
+    hallazgosHtml = sorted.map(h => `
+      <div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+        <span class="riesgo-badge riesgo-${h.riesgo}">${h.riesgo}</span>
+        <span style="font-size:12px">#${h.num} ${h.txt}</span>
+      </div>
+    `).join('');
+  }
+
+  const cantNC = STATE.HALLAZGOS.length;
+
+  return `
+    <div class="informe-block">
+      <div class="informe-header">
+        <div class="informe-title">══ INFORME DE SUPERVISIÓN DE SEGURIDAD FÍSICA — BBVA PERÚ ══</div>
+        <div class="informe-sub">SEGURITO v2026 · Manual V2</div>
+      </div>
+      <div class="informe-body">
+        <div class="informe-section">
+          <div class="informe-section-title">BLOQUE 1 — DATOS GENERALES</div>
+          <div style="display:grid;gap:3px;font-size:13px">
+            <div class="dato-row"><span class="dato-key">Oficina supervisada</span><span class="dato-val">${STATE.OFICINA}</span></div>
+            <div class="dato-row"><span class="dato-key">Responsable</span><span class="dato-val">${STATE.SUPERVISOR}</span></div>
+            <div class="dato-row"><span class="dato-key">Fecha de inspección</span><span class="dato-val">${STATE.FECHA_INS}</span></div>
+            <div class="dato-row"><span class="dato-key">Hora de inicio</span><span class="dato-val">${STATE.HORA_INS}</span></div>
+            <div class="dato-row"><span class="dato-key">Ciclo operativo</span><span class="dato-val">${CICLO_NOMBRES[STATE.CICLO]}</span></div>
+          </div>
+        </div>
+
+        ${conVent ? `
+        <div class="informe-section">
+          <div class="informe-section-title">BLOQUE 2 — TABLA A (CAJA BUZÓN #16) Y TABLA B (CAJÓN #14)</div>
+          ${tablaAHtml}
+        </div>
+        ` : `
+        <div class="informe-section">
+          <div class="informe-section-title">BLOQUE 2 — TABLA A (CAJA BUZÓN #16)</div>
+          ${tablaAHtml}
+          <div style="margin-top:10px"><div class="informe-section-title">BLOQUE 3 — TABLA B (CAJÓN #14)</div>${tablaBHtml}</div>
+        </div>
+        `}
+
+        <div class="informe-section">
+          <div class="informe-section-title">BLOQUE 4 — NO CONFORMIDADES</div>
+          <p style="font-size:12px;color:var(--bbva-muted);margin-bottom:8px">Cantidad NO SE CUMPLE: <strong style="color:var(--bbva-text)">${cantNC}</strong></p>
+          ${hallazgosHtml}
+        </div>
+
+        <div class="informe-section">
+          <div class="informe-section-title">BLOQUE 5 — RESULTADO FINAL</div>
+          <table class="score-table">
+            <thead><tr><th>Categoría</th><th>Cant.</th><th>Desc.</th><th>Subtotal</th></tr></thead>
+            <tbody>
+              <tr><td style="color:#FF6B5E">Alto Riesgo (AR)</td><td>${ar}</td><td>× 5</td><td>−${ar*5}</td></tr>
+              <tr><td style="color:#FFC63D">Riesgo Medio (MR)</td><td>${mr}</td><td>× 3</td><td>−${mr*3}</td></tr>
+              <tr><td style="color:#00D98C">Bajo Riesgo (BR)</td><td>${br}</td><td>× 1</td><td>−${br}</td></tr>
+              <tr style="border-top:1px solid var(--bbva-border)"><td colspan="3" style="font-weight:600">TOTAL DESCUENTOS</td><td style="color:#FF6B5E;font-weight:600">−${descuento}</td></tr>
+            </tbody>
+          </table>
+          <div class="nota-display">
+            <div>
+              <div style="font-size:12px;color:var(--bbva-muted);margin-bottom:2px">NOTA NUMÉRICA</div>
+              <div class="nota-num">${nota}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:12px;color:var(--bbva-muted);margin-bottom:4px">ESTADO DE OFICINA</div>
+              <div class="nota-estado ${estClass}">${estado}</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="chart-informe-wrap" style="margin-top:16px">
+          <div class="informe-section-title" style="margin-bottom:10px">GRÁFICO DE RESULTADOS</div>
+          <canvas id="chartInforme" height="200"></canvas>
+        </div>
+
+        <button class="export-btn" onclick="exportarInforme()">📄 EXPORTAR INFORME (COPIAR AL PORTAPAPELES)</button>
+      </div>
+    </div>
+  `;
+}
+
+function initChartInforme() {
+  setTimeout(() => {
+    const el = document.getElementById('chartInforme');
+    if (!el) return;
+    const ar = STATE.HALLAZGOS.filter(h=>h.riesgo==='AR').length;
+    const mr = STATE.HALLAZGOS.filter(h=>h.riesgo==='MR').length;
+    const br = STATE.HALLAZGOS.filter(h=>h.riesgo==='BR').length;
+    const total = STATE.LISTA_LINS.filter(x=>x!=='VENT').length;
+    const cumple = total - (ar+mr+br);
+
+    new Chart(el.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: ['SE CUMPLE', 'Alto Riesgo', 'Riesgo Medio', 'Bajo Riesgo'],
+        datasets: [{
+          label: 'Lineamientos',
+          data: [cumple, ar, mr, br],
+          backgroundColor: ['rgba(0,180,125,0.7)','rgba(230,61,47,0.7)','rgba(245,168,0,0.7)','rgba(72,165,224,0.7)'],
+          borderColor: ['#00B47D','#E63D2F','#F5A800','#48A5E0'],
+          borderWidth: 1, borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0D1F3C',
+            borderColor: 'rgba(72,165,224,0.3)',
+            borderWidth: 1,
+            bodyColor: '#E8F0FA',
+            titleColor: '#48A5E0'
+          }
+        },
+        scales: {
+          x: { ticks: { color: '#6B89A8', font: { size: 11 } }, grid: { color: 'rgba(72,165,224,0.08)' } },
+          y: { ticks: { color: '#6B89A8', font: { size: 11 } }, grid: { color: 'rgba(72,165,224,0.08)' }, beginAtZero: true }
+        }
+      }
+    });
+  }, 200);
+}
+
+function exportarInforme() {
+  const txt = `INFORME DE SUPERVISIÓN BBVA PERÚ — SEGURITO 2026
+======================================================
+Oficina: ${STATE.OFICINA}
+Supervisor: ${STATE.SUPERVISOR}
+Fecha: ${STATE.FECHA_INS}
+Hora: ${STATE.HORA_INS}
+Ciclo: ${CICLO_NOMBRES[STATE.CICLO]}
+
+HALLAZGOS (${STATE.HALLAZGOS.length}):
+${STATE.HALLAZGOS.sort((a,b)=>a.num-b.num).map(h=>`[${h.riesgo}] #${h.num} ${h.txt}`).join('\n')}
+
+RESULTADO:
+AR: ${STATE.HALLAZGOS.filter(h=>h.riesgo==='AR').length} × 5 = -${STATE.HALLAZGOS.filter(h=>h.riesgo==='AR').length*5}
+MR: ${STATE.HALLAZGOS.filter(h=>h.riesgo==='MR').length} × 3 = -${STATE.HALLAZGOS.filter(h=>h.riesgo==='MR').length*3}
+BR: ${STATE.HALLAZGOS.filter(h=>h.riesgo==='BR').length} × 1 = -${STATE.HALLAZGOS.filter(h=>h.riesgo==='BR').length}
+`;
+  navigator.clipboard.writeText(txt).then(() => {
+    alert('Informe copiado al portapapeles.');
+  }).catch(() => { alert('No se pudo copiar. Use Ctrl+A en el chat.'); });
+}
+
+// ═══════════════════════════════════════════════════════════
+// LÓGICA DE FLUJO
+// ═══════════════════════════════════════════════════════════
+
+function avanzarAuditoria() {
+  if (STATE.POS >= STATE.LISTA_LINS.length) return;
+  const item = STATE.LISTA_LINS[STATE.POS];
+  if (item === 'VENT') {
+    STATE.TOTAL_VENT = 0; STATE.TODAS_VENT = [];
+    STATE.ORDEN_EVAL = []; STATE.VENT_EVAL = [];
+    STATE.NC_14 = false; STATE.NC_16 = false;
+    STATE.VENT = {};
+    STATE.ventFase = 'CANT';
+    addMsg(renderTransicion(), 'system');
+    setHint('CANTIDAD-VENT', 'Escriba la cantidad entre paréntesis: (4)');
+  } else {
+    if (item === 58) {
+      addMsg(renderLineamiento(item), 'system');
+      setHint('CONFORMIDAD', 'Solo 1 o 2');
+    } else {
+      addMsg(renderLineamiento(item), 'system');
+      setHint('CONFORMIDAD', 'Solo 1 o 2');
+    }
+  }
+}
+
+function responderLin(num, val) {
+  if (STATE.esperando !== 'CONFORMIDAD') return;
+  addMsg(val === '1' ? '1️⃣ SE CUMPLE' : '2️⃣ NO SE CUMPLE', 'user');
+  if (val === '2') {
+    STATE.HALLAZGOS.push({ num, txt: LINEAMIENTOS[num].txt, riesgo: LINEAMIENTOS[num].riesgo });
+  }
+  STATE.POS++;
+  updateSidebar();
+  if (num === 58) {
+    generarInformeFinal();
+    return;
+  }
+  if ((num === 13) && (STATE.CICLO === 'B' || STATE.CICLO === 'D')) {
+    STATE.ventFase = 'CANT';
+    addMsg(renderTransicion(), 'system');
+    setHint('CANTIDAD-VENT', 'Escriba la cantidad entre paréntesis: (4)');
+    return;
+  }
+  avanzarAuditoria();
+}
+
+function elegirVent(v) {
+  const pendientes = STATE.TODAS_VENT.filter(x => !STATE.VENT_EVAL.includes(x));
+  if (!pendientes.includes(v)) return;
+  addMsg(`(${v})`, 'user');
+  STATE.VENT_ACTIVA = v;
+  STATE.ORDEN_EVAL.push(v);
+  STATE.VENT[v] = {};
+  STATE.ventFase = 'ASESOR';
+  addMsg(`¿Cuál es el nombre del asesor de la ventanilla ${v}?<br><span class="tag-espera">[ESPERA: TEXTO]</span>`, 'system');
+  setHint('TEXTO', 'Nombre del asesor');
+}
+
+function generarInformeFinal() {
+  if (STATE.NC_16) STATE.HALLAZGOS.push({ num:16, txt: LINEAMIENTOS[16].txt, riesgo:'MR' });
+  if (STATE.NC_14) STATE.HALLAZGOS.push({ num:14, txt: LINEAMIENTOS[14].txt, riesgo:'AR' });
+  STATE.HALLAZGOS = STATE.HALLAZGOS.filter((h,i,arr) => arr.findIndex(x=>x.num===h.num)===i);
+  updateSidebar();
+  addMsg(renderInformeFinal(), 'system');
+  initChartInforme();
+  setHint('FIN', 'Supervisión completada');
+  document.getElementById('chat-input').disabled = true;
+  document.getElementById('send-btn').disabled = true;
+}
+
+// ═══════════════════════════════════════════════════════════
+// PROCESADOR DE INPUT
+// ═══════════════════════════════════════════════════════════
+
+function procesarInput(raw) {
+  const txt = raw.trim();
+  if (!txt) return;
+
+  const esp = STATE.esperando;
+
+  if (esp === 'CLAVE') {
+    addMsg(txt, 'user');
+    const digits = txt.replace(/\D/g,'');
+    if (CLAVES[digits]) {
+      STATE.SUPERVISOR = CLAVES[digits];
+      STATE.fase = 'OFICINA';
+      addMsg(`¡Hola, <strong>${STATE.SUPERVISOR}</strong>! ¿Qué oficina vamos a supervisar hoy?<br><span class="tag-espera">[ESPERA: TEXTO]</span>`, 'system');
+      setHint('TEXTO', 'Nombre de la oficina');
+    } else {
+      addMsg('Clave incorrecta. Ingrese su clave.<br><span class="tag-espera">[ESPERA: CLAVE]</span>', 'system');
+    }
+    updateSidebar(); return;
+  }
+
+  if (esp === 'TEXTO') {
+    if (STATE.fase === 'OFICINA') {
+      addMsg(txt, 'user');
+      STATE.OFICINA = txt;
+      STATE.fase = 'CICLO';
+      addMsg(`Oficina <strong>${txt}</strong> detectada en DATA OFICINAS 2025. Iniciamos supervisión.<br><br>
+        ¿Qué ciclo operativo supervisaremos?<br>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;font-family:var(--font-mono);font-size:13px">
+          <span style="cursor:pointer;padding:3px 6px;border-radius:4px;background:rgba(255,255,255,0.05)" onclick="autoClick('A')">A. PRE APERTURA</span>
+          <span style="cursor:pointer;padding:3px 6px;border-radius:4px;background:rgba(255,255,255,0.05)" onclick="autoClick('B')">B. ATENCIÓN AL PÚBLICO</span>
+          <span style="cursor:pointer;padding:3px 6px;border-radius:4px;background:rgba(255,255,255,0.05)" onclick="autoClick('C')">C. TÉRMINO DEL HORARIO Y CIERRE</span>
+          <span style="cursor:pointer;padding:3px 6px;border-radius:4px;background:rgba(255,255,255,0.05)" onclick="autoClick('D')">D. CICLO OPERATIVO COMPLETO</span>
+        </div>
+        <br><span class="tag-espera">[ESPERA: CICLO]</span>`, 'system');
+      setHint('CICLO', 'Escriba A, B, C o D');
+      updateSidebar(); return;
+    }
+    // asesor ventanilla
+    if (STATE.ventFase === 'ASESOR') {
+      addMsg(txt, 'user');
+      const v = STATE.VENT_ACTIVA;
+      STATE.VENT[v].ASESOR = txt;
+      STATE.ventFase = 'CB_SOLES';
+      addMsg(`Para la <strong>Caja Buzón ${v}</strong> de <strong>${txt}</strong>,<br>¿Cuánto es la confirmación en Soles (S/.)?<br><span class="tag-espera">[ESPERA: MONTO-SOLES]</span>`, 'system');
+      setHint('MONTO-SOLES', 'Monto en soles');
+      return;
+    }
+  }
+
+  if (esp === 'CICLO') {
+    addMsg(txt, 'user');
+    const m = txt.match(/[abcdABCD]/);
+    if (m) {
+      const ciclo = m[0].toUpperCase();
+      STATE.CICLO = ciclo;
+      STATE.LISTA_LINS = CICLOS[ciclo];
+      STATE.POS = 0;
+      addMsg(`Ciclo <strong>${CICLO_NOMBRES[ciclo]}</strong> registrado.<br><br>¿Cuál es la fecha de la supervisión? (DD/MM/AAAA)<br><span class="tag-espera">[ESPERA: FECHA]</span>`, 'system');
+      setHint('FECHA', 'Fecha en DD/MM/AAAA');
+      updateSidebar();
+    } else {
+      addMsg('Ciclo inválido. Escriba A, B, C o D.<br><span class="tag-espera">[ESPERA: CICLO]</span>', 'system');
+    }
+    return;
+  }
+
+  if (esp === 'FECHA') {
+    addMsg(txt, 'user');
+    STATE.FECHA_INS = txt;
+    addMsg(`¿Cuál es la hora de inicio de la supervisión? (HH:MM)<br><span class="tag-espera">[ESPERA: HORA]</span>`, 'system');
+    setHint('HORA', 'Hora de inicio');
+    updateSidebar(); return;
+  }
+
+  if (esp === 'HORA') {
+    addMsg(txt, 'user');
+    STATE.HORA_INS = txt;
+    updateSidebar();
+    avanzarAuditoria();
+    return;
+  }
+
+  if (esp === 'CONFORMIDAD') {
+    if (txt === '1' || txt === '2') {
+      const num = STATE.LISTA_LINS[STATE.POS];
+      responderLin(num, txt);
+    } else {
+      addMsg(txt, 'user');
+      addMsg('Solo "1" o "2" son válidos.<br>' + renderLineamiento(STATE.LISTA_LINS[STATE.POS]), 'system');
+    }
+    return;
+  }
+
+  if (esp === 'CANTIDAD-VENT') {
+    const m = txt.match(/^\((\d+)\)$/);
+    if (m) {
+      addMsg(txt, 'user');
+      const n = parseInt(m[1]);
+      STATE.TOTAL_VENT = n;
+      STATE.TODAS_VENT = Array.from({length:n},(_,i)=>i+1);
+      STATE.ventFase = 'SELECCION';
+      addMsg(renderVentOpts(STATE.TODAS_VENT), 'system');
+      setHint('NUM-VENT', 'Escriba (N) entre paréntesis');
+    } else {
+      addMsg(txt, 'user');
+      addMsg('Por favor, escriba la cantidad entre paréntesis.<br>Ejemplo: (4)<br><span class="tag-espera">[ESPERA: CANTIDAD-VENT]</span>', 'system');
+    }
+    return;
+  }
+
+  if (esp === 'NUM-VENT') {
+    const m = txt.match(/^\((\d+)\)$/);
+    if (m) {
+      const v = parseInt(m[1]);
+      const pendientes = STATE.TODAS_VENT.filter(x => !STATE.VENT_EVAL.includes(x));
+      if (pendientes.includes(v)) {
+        elegirVent(v);
+      } else {
+        addMsg(txt, 'user');
+        addMsg('Ventanilla no válida o ya evaluada. Opciones: ' + pendientes.map(p=>`(${p})`).join(' ') + '<br><span class="tag-espera">[ESPERA: NUM-VENT]</span>', 'system');
+      }
+    } else {
+      addMsg(txt, 'user');
+      const pendientes = STATE.TODAS_VENT.filter(x => !STATE.VENT_EVAL.includes(x));
+      addMsg('Formato inválido. Escriba el número entre paréntesis.<br>' + renderVentOpts(pendientes), 'system');
+    }
+    return;
+  }
+
+  if (esp === 'MONTO-SOLES' || esp === 'MONTO-DOLAR') {
+    addMsg(txt, 'user');
+    const monto = parseMonto(txt);
+    const v = STATE.VENT_ACTIVA;
+    const d = STATE.VENT[v];
+
+    if (STATE.ventFase === 'CB_SOLES') {
+      d.CB_SOLES = monto;
+      STATE.ventFase = 'CB_DOLAR';
+      addMsg(`¿Y cuánto es la confirmación en Dólares ($)?<br><span class="tag-espera">[ESPERA: MONTO-DOLAR]</span>`, 'system');
+      setHint('MONTO-DOLAR', 'Monto en dólares');
+
+    } else if (STATE.ventFase === 'CB_DOLAR') {
+      d.CB_DOLAR = monto;
+      d.CB_CONV = d.CB_SOLES / 3.9;
+      d.CB_TOTAL = d.CB_CONV + d.CB_DOLAR;
+      d.CB_EXCESO = Math.max(0, d.CB_TOTAL - 53500);
+      if (d.CB_EXCESO > 0) { STATE.NC_16 = true; }
+      const alertHtml = d.CB_EXCESO > 0
+        ? `<div class="alert-exceso">⚠️ SUPERÓ SU LÍMITE — Exceso: $${fmt(d.CB_EXCESO)} USD</div>`
+        : `<div class="alert-ok">✅ DENTRO DEL LÍMITE</div>`;
+      STATE.ventFase = 'CAJ_SOLES';
+      addMsg(`${alertHtml}<br>Para el <strong>Cajón de Ventanilla ${v}</strong> de <strong>${d.ASESOR}</strong>,<br>¿Cuántos Soles (S/.) tienes en billetes?<br><span class="tag-espera">[ESPERA: MONTO-SOLES]</span>`, 'system');
+      setHint('MONTO-SOLES', 'Monto en soles del cajón');
+
+    } else if (STATE.ventFase === 'CAJ_SOLES') {
+      d.CAJ_SOLES = monto;
+      STATE.ventFase = 'CAJ_DOLAR';
+      addMsg(`¿Y cuántos Dólares ($) tienes en billetes?<br><span class="tag-espera">[ESPERA: MONTO-DOLAR]</span>`, 'system');
+      setHint('MONTO-DOLAR', 'Monto en dólares del cajón');
+
+    } else if (STATE.ventFase === 'CAJ_DOLAR') {
+      d.CAJ_DOLAR = monto;
+      d.CAJ_CONV = d.CAJ_SOLES / 3.9;
+      d.CAJ_TOTAL = d.CAJ_CONV + d.CAJ_DOLAR;
+      d.CAJ_EXCESO = Math.max(0, d.CAJ_TOTAL - 3500);
+      if (d.CAJ_EXCESO > 0) { STATE.NC_14 = true; }
+      const alertHtml = d.CAJ_EXCESO > 0
+        ? `<div class="alert-exceso">⚠️ SUPERÓ SU LÍMITE — Exceso: $${fmt(d.CAJ_EXCESO)} USD</div>`
+        : `<div class="alert-ok">✅ DENTRO DEL LÍMITE</div>`;
+
+      STATE.VENT_EVAL.push(v);
+      const pendientes = STATE.TODAS_VENT.filter(x => !STATE.VENT_EVAL.includes(x));
+
+      if (pendientes.length > 1) {
+        addMsg(`${alertHtml}`, 'system');
+        setTimeout(() => {
+          addMsg(renderVentOpts(pendientes), 'system');
+          setHint('NUM-VENT', 'Siguiente ventanilla');
+        }, 100);
+        STATE.ventFase = 'SELECCION';
+      } else if (pendientes.length === 1) {
+        addMsg(`${alertHtml}`, 'system');
+        const last = pendientes[0];
+        STATE.VENT_ACTIVA = last;
+        STATE.ORDEN_EVAL.push(last);
+        STATE.VENT[last] = {};
+        STATE.ventFase = 'ASESOR';
+        setTimeout(() => {
+          addMsg(`Ventanilla ${last} — última pendiente.<br>¿Cuál es el nombre del asesor de la ventanilla ${last}?<br><span class="tag-espera">[ESPERA: TEXTO]</span>`, 'system');
+          setHint('TEXTO', 'Nombre del asesor');
+        }, 100);
+      } else {
+        // todas evaluadas — tablas y retorno
+        addMsg(`${alertHtml}`, 'system');
+        if (STATE.NC_16) STATE.HALLAZGOS.push({ num:16, txt: LINEAMIENTOS[16].txt, riesgo:'MR' });
+        if (STATE.NC_14) STATE.HALLAZGOS.push({ num:14, txt: LINEAMIENTOS[14].txt, riesgo:'AR' });
+        STATE.HALLAZGOS = STATE.HALLAZGOS.filter((h,i,arr) => arr.findIndex(x=>x.num===h.num)===i);
+        updateSidebar();
+        setTimeout(() => {
+          addMsg(renderTablas(), 'system');
+          STATE.POS++;
+          STATE.ventFase = null;
+          avanzarAuditoria();
+        }, 200);
+      }
+    }
+    return;
+  }
+
+  // catch-all texto
+  if (esp === 'TEXTO' && STATE.ventFase === 'ASESOR') {
+    procesarInput(txt);
+  }
+}
+
+function autoClick(ciclo) {
+  document.getElementById('chat-input').value = ciclo;
+  handleSend();
+}
+
+// ═══════════════════════════════════════════════════════════
+// EVENTOS
+// ═══════════════════════════════════════════════════════════
+
+function handleSend() {
+  const inp = document.getElementById('chat-input');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  inp.value = '';
+  procesarInput(txt);
+}
+
+document.getElementById('send-btn').addEventListener('click', handleSend);
+document.getElementById('chat-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') handleSend();
+});
+
+// ═══════════════════════════════════════════════════════════
+// INICIO
+// ═══════════════════════════════════════════════════════════
+
+initChart();
+updateSidebar();
+addMsg(`Bienvenido al sistema de supervisión <strong>SEGURITO BBVA 2026</strong>.<br><br>Por favor, ingrese su clave de acceso para continuar.<br><span class="tag-espera">[ESPERA: CLAVE]</span>`, 'system');
+setHint('CLAVE', 'Ingrese su clave de acceso numérica');
+</script>
+</body>
+</html>
